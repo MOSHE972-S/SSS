@@ -1,0 +1,69 @@
+name: Build StegoCrypto EXE
+
+# מתי להריץ את הבניה?
+# 1. workflow_dispatch: מאפשר לך ללחוץ על כפתור ידני בטאב Actions כדי לבנות.
+# 2. push: רץ אוטומטית בכל פעם שאתה דוחף קוד ל-main (אופציונלי, שמתי בהערה).
+on:
+  workflow_dispatch:
+  # push:
+  #   branches: [ "main" ]
+
+jobs:
+  build:
+    name: Build on Windows
+    runs-on: windows-latest
+
+    steps:
+      # 1. הורדת הקוד מה-Repository
+      - name: Check-out repository
+        uses: actions/checkout@v4
+
+      # 2. התקנת Python
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11' # גרסה יציבה מאוד ל-Nuitka
+          cache: 'pip'
+
+      # 3. התקנת הספריות הנדרשות
+      - name: Install Dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install nuitka zstandard
+
+      # 4. קימפול באמצעות Nuitka Action הרשמי
+      # זהו השלב הקריטי שמבצע את האופטימיזציה והקימפול
+      - name: Build EXE using Nuitka
+        uses: Nuitka/Nuitka-Action@main
+        with:
+          nuitka-version: stable
+          script-name: stego_v11.py  # וודא שזה שם הקובץ שלך!
+          
+          # הגדרות יצוא
+          standalone: true
+          onefile: true
+          show-memory: true
+          show-progress: true
+          
+          # אופטימיזציה
+          lto: yes             # Link Time Optimization (קריטי לביצועים)
+          
+          # הגדרות חלון (ללא קונסולה שחורה)
+          windows-disable-console: true
+          
+          # פלאגינים נדרשים
+          enable-plugins: tk-inter,numpy
+          
+          # הכללת ספריות ספציפיות
+          include-package: customtkinter,PIL,cryptography
+          
+          # שם הקובץ שיוצר
+          output-file: StegoCrypto_Pro_v11.exe
+
+      # 5. העלאת הקובץ המוכן (Artifact) כדי שתוכל להוריד אותו
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: StegoCrypto_v11_Build
+          path: build/StegoCrypto_Pro_v11.exe
+          compression-level: 0 # ה-EXE כבר דחוס
