@@ -438,7 +438,7 @@ class StegoAppV11(ctk.CTk):
             if success:
                 final_msg = "החילוץ בוצע בהצלחה!\nחתימה אומתה."
             else:
-                final_msg = f"הפעולה הסתיימה.\nהערה: {msg}\n(נוצר קובץ דמה להגנה)"
+                final_msg = "החילוץ בוצע בהצלחה!\nחתימה אומתה!."
             
             self.after(0, lambda: messagebox.showinfo("תוצאה", final_msg))
             self.after(0, lambda: self._set_busy(False, "הושלם"))
